@@ -1,0 +1,9 @@
+[build]
+  base = "ud-judge-comment-archive/"
+  command = "npm run build"
+  publish = "ud-judge-comment-archive/dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
