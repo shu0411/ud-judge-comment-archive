@@ -105,12 +105,12 @@
     ]
   },
   {
-    "id": "unidol-2025-fresh-kanto",
-    "label": "UNIDOL 2025 Fresh in KANTO",
+    "id": "unidol-2025-fresh",
+    "label": "UNIDOL 2025 Fresh",
     "events": [
       {
         "id": "unidol-2025-fresh-kanto3",
-        "label": "3日目",
+        "label": "関東3日目",
         "tweets": [
           "1975887371813126144",
           "1975887374774362623",
@@ -119,7 +119,7 @@
       },
       {
         "id": "unidol-2025-fresh-kanto2",
-        "label": "2日目",
+        "label": "関東2日目",
         "tweets": [
           "1975527631228707151",
           "1975527635351708054",
@@ -128,7 +128,7 @@
       },
       {
         "id": "unidol-2025-fresh-kanto1",
-        "label": "1日目",
+        "label": "関東1日目",
         "tweets": [
           "1975162800856350911",
           "1975162803603566832",
@@ -243,12 +243,12 @@
     ]
   },
   {
-    "id": "unidol-2024-fresh-kanto",
-    "label": "UNIDOL 2024 Fresh in KANTO",
+    "id": "unidol-2024-fresh",
+    "label": "UNIDOL 2024 Fresh",
     "events": [
       {
         "id": "unidol-2024-fresh-kanto2",
-        "label": "2日目",
+        "label": "関東2日目",
         "tweets": [
           "1841440599003877432",
           "1841440600933151001",
@@ -257,7 +257,7 @@
       },
       {
         "id": "unidol-2024-fresh-kanto1",
-        "label": "1日目",
+        "label": "関東1日目",
         "tweets": [
           "1841079200201003208"
         ]

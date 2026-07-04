@@ -1,6 +1,6 @@
 # ud-judge-comment-archive
 
-UNIDOL審査員コメントまとめサイト。UNIDOLの各大会・試合日程ごとに、審査員コメント（X上のツイート）をアーカイブする非公式のファンサイトです。詳細な仕様は [../docs/spec.md](../docs/spec.md) を参照してください。
+UNIDOL審査員コメントまとめサイト。UNIDOLの各大会・日程ごとに、審査員コメント（X上のツイート）をアーカイブする非公式のファンサイトです。詳細な仕様は [../docs/spec.md](../docs/spec.md) を参照してください。
 
 ## 技術スタック
 
@@ -28,7 +28,7 @@ npm run dev
 
 ## データの管理
 
-大会・試合・ツイートの情報は [`src/data/tweetList.json`](src/data/tweetList.json) に定義します（型定義は [`src/types.ts`](src/types.ts)）。ツイートは投稿者アカウントが単一である前提で、ツイートIDの配列のみを保持し、URLは [`src/constants.ts`](src/constants.ts) の `tweetUrl()` で組み立てます。投稿者アカウントを変更する場合は `TWEET_AUTHOR_HANDLE` を書き換えてください。
+大会・日程・ツイートの情報は [`src/data/tweetList.json`](src/data/tweetList.json) に定義します（型定義は [`src/types.ts`](src/types.ts)）。ツイートは投稿者アカウントが単一である前提で、ツイートIDの配列のみを保持し、URLは [`src/constants.ts`](src/constants.ts) の `tweetUrl()` で組み立てます。投稿者アカウントを変更する場合は `TWEET_AUTHOR_HANDLE` を書き換えてください。
 
 ## e2eテスト
 

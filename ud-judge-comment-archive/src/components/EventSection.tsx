@@ -1,24 +1,29 @@
-import type { Event } from '../types'
-import TweetEmbed from './TweetEmbed'
+import type { Event } from "../types";
+import TweetEmbed from "./TweetEmbed";
 
 interface EventSectionProps {
-  event: Event
-  isExpanded: boolean
-  onToggle: (id: string) => void
+  event: Event;
+  isExpanded: boolean;
+  onToggle: (id: string) => void;
 }
 
 function EventSection({ event, isExpanded, onToggle }: EventSectionProps) {
   return (
     <div className="border-t border-gray-200 dark:border-gray-700 first:border-t-0">
-      <h3>
+      <h3 className="sticky top-[calc(var(--topbar-height)+3.5rem)] z-10 bg-white dark:bg-gray-900">
         <button
           type="button"
           onClick={() => onToggle(event.id)}
           aria-expanded={isExpanded}
-          className="flex w-full items-center justify-between py-2 text-left text-lg font-medium text-gray-800 dark:text-gray-200"
+          className="flex h-12 w-full items-center justify-between text-left text-lg font-medium text-gray-800 dark:text-gray-200"
         >
           <span>{event.label}</span>
-          <span aria-hidden="true">{isExpanded ? '−' : '+'}</span>
+          <span
+            aria-hidden="true"
+            className="inline-block w-5 shrink-0 text-center"
+          >
+            {isExpanded ? "-" : "+"}
+          </span>
         </button>
       </h3>
       {isExpanded && (
@@ -28,12 +33,14 @@ function EventSection({ event, isExpanded, onToggle }: EventSectionProps) {
               まだコメントが登録されていません。
             </p>
           ) : (
-            event.tweets.map((tweetId) => <TweetEmbed key={tweetId} tweetId={tweetId} />)
+            event.tweets.map((tweetId) => (
+              <TweetEmbed key={tweetId} tweetId={tweetId} />
+            ))
           )}
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default EventSection
+export default EventSection;

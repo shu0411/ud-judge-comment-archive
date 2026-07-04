@@ -5,7 +5,7 @@ interface ControlsProps {
 
 function Controls({ onExpandAll, onCollapseAll }: ControlsProps) {
   return (
-    <div className="mb-4 flex gap-2">
+    <div className="flex gap-2 px-4 py-2">
       <button
         type="button"
         onClick={onExpandAll}

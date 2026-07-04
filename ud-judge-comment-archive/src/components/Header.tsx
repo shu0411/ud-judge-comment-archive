@@ -6,8 +6,11 @@ function Header() {
       </h1>
       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
         UNIDOLにおける審査員コメントのメモ一覧です。
+        <br />
         当サイトはファンによる非公式サイトです。UNIDOL公式とは一切関係ありません。
+        <br />
         また、一個人での解釈によるメモのため、正確ではない可能性があります。参考程度にご覧ください。
+        <br />
       </p>
     </header>
   );

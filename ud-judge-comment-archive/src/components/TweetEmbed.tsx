@@ -34,7 +34,7 @@ function TweetEmbed({ tweetId }: TweetEmbedProps) {
   const url = tweetUrl(tweetId)
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="w-full max-w-full overflow-hidden sm:w-auto">
       <blockquote className="twitter-tweet">
         <a href={url}>{url}</a>
       </blockquote>
