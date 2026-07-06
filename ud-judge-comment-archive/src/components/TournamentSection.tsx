@@ -1,3 +1,4 @@
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type { Tournament } from "../types";
 import EventSection from "./EventSection";
 
@@ -29,11 +30,12 @@ function TournamentSection({
           className="flex h-14 w-full items-center justify-between text-left text-2xl font-semibold text-gray-900 dark:text-gray-100"
         >
           <span>{tournament.label}</span>
-          <span
-            aria-hidden="true"
-            className="inline-block w-5 shrink-0 text-center"
-          >
-            {isExpanded ? "-" : "+"}
+          <span className="inline-block w-5 shrink-0 text-center">
+            {isExpanded ? (
+              <ChevronUp className="inline size-5" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="inline size-5" aria-hidden="true" />
+            )}
           </span>
         </button>
       </h2>

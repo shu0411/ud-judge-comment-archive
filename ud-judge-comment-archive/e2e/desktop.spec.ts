@@ -96,7 +96,7 @@ test("全て折りたたむ・全て展開する・個別の開閉が正しく�
     page.getByRole("heading", { name: "Fixture Tournament A" }),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "全て展開する" }).click();
+  await page.getByRole("button", { name: "全て展開" }).click();
   await expect(
     page.getByRole("heading", { name: "Fixture Event A-1" }),
   ).toBeVisible();
@@ -118,7 +118,7 @@ test("目次に大会名が一覧表示され、クリックすると該当箇�
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator('button:has-text("☰ 目次")')).toBeHidden();
+  await expect(page.getByRole("button", { name: "目次を開く" })).toBeHidden();
 
   const toc = page.locator("nav");
   await expect(

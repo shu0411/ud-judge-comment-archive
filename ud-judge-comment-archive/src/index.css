@@ -6,7 +6,7 @@ body {
 }
 
 :root {
-  --topbar-height: 0px;
+  --topbar-height: 3.5rem;
 }
 
 .twitter-tweet-rendered,
