@@ -157,11 +157,12 @@ test("prefers-color-schemeに応じてライト/ダークテーマが切り替�
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/");
   const root = page.locator("#root > div").first();
-  await expect(root).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  // theme.ts sets light background.default to #F8FAFC.
+  await expect(root).toHaveCSS("background-color", "rgb(248, 250, 252)");
 
   await page.emulateMedia({ colorScheme: "dark" });
-  // MUI's default dark palette background.default is #121212.
-  await expect(root).toHaveCSS("background-color", "rgb(18, 18, 18)");
+  // theme.ts sets dark background.default to #1E293B.
+  await expect(root).toHaveCSS("background-color", "rgb(30, 41, 59)");
 });
 
 test("コンソールエラーが発生しない", async ({ page }) => {
