@@ -24,7 +24,7 @@ function TournamentSection({
   onToggleEvent,
 }: TournamentSectionProps) {
   return (
-    <Box id={tournament.id} sx={{ scrollMarginTop: '5rem' }}>
+    <Box id={tournament.id} sx={{ scrollMarginTop: `${HEADER_HEIGHT}px` }}>
       <Accordion
         expanded={isExpanded}
         onChange={() => onToggleTournament(tournament.id)}

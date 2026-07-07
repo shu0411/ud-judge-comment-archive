@@ -26,8 +26,26 @@ function TableOfContents({
 }: TableOfContentsProps) {
   function scrollToTournament(id: string) {
     onExpandTournament(id)
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     onCloseMobileDrawer()
+
+    const el = document.getElementById(id)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+    // If the tournament was collapsed, expanding it grows the page height
+    // over the accordion's transition, so the initial scroll above lands
+    // short (the browser clamps to the pre-expansion scroll range). Once
+    // the element's size stops changing, correct the scroll position.
+    let debounceTimer: ReturnType<typeof setTimeout>
+    const observer = new ResizeObserver(() => {
+      clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        observer.disconnect()
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    })
+    observer.observe(el)
+    setTimeout(() => observer.disconnect(), 2000)
   }
 
   const list = (
