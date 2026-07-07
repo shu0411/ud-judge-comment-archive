@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import Box from '@mui/material/Box'
 import tournamentsData from '@data/tweetList'
 import type { Tournament } from './types'
+import { HEADER_HEIGHT, DRAWER_WIDTH, RAIL_WIDTH } from './theme'
 import Header from './components/Header'
 import SiteNotice from './components/SiteNotice'
 import TableOfContents from './components/TableOfContents'
@@ -52,7 +54,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
       <Header
         isDesktopSidebarCollapsed={isDesktopSidebarCollapsed}
         onOpenDrawer={() => setIsMobileDrawerOpen(true)}
@@ -66,13 +68,15 @@ function App() {
         isDesktopCollapsed={isDesktopSidebarCollapsed}
         onToggleDesktopCollapsed={() => setIsDesktopSidebarCollapsed((prev) => !prev)}
       />
-      <div
-        className={`pt-14 transition-[margin-left] duration-200 ${
-          isDesktopSidebarCollapsed ? 'md:ml-10' : 'md:ml-64'
-        }`}
+      <Box
+        sx={{
+          pt: `${HEADER_HEIGHT}px`,
+          transition: (theme) => theme.transitions.create('margin-left'),
+          ml: { md: `${isDesktopSidebarCollapsed ? RAIL_WIDTH : DRAWER_WIDTH}px` },
+        }}
       >
         <SiteNotice />
-        <main className="px-4 py-4">
+        <Box component="main" sx={{ px: { xs: 1, md: 2 }, py: 2 }}>
           <TournamentList
             tournaments={tournaments}
             expandedTournaments={expandedTournaments}
@@ -80,9 +84,9 @@ function App() {
             onToggleTournament={toggleTournament}
             onToggleEvent={toggleEvent}
           />
-        </main>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   )
 }
 

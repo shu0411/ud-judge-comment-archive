@@ -144,8 +144,8 @@ test("prefers-color-schemeに応じてライト/ダークテーマが切り替�
   await expect(root).toHaveCSS("background-color", "rgb(255, 255, 255)");
 
   await page.emulateMedia({ colorScheme: "dark" });
-  // Tailwind v4's default gray-900 is defined in OKLCH, not sRGB.
-  await expect(root).toHaveCSS("background-color", "oklch(0.21 0.034 264.665)");
+  // MUI's default dark palette background.default is #121212.
+  await expect(root).toHaveCSS("background-color", "rgb(18, 18, 18)");
 });
 
 test("コンソールエラーが発生しない", async ({ page }) => {

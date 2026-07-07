@@ -5,18 +5,18 @@ test('目次がハンバーガーボタンで開くドロワーになってい�
   const drawerToggle = page.getByRole('button', { name: '目次を開く' })
   await expect(drawerToggle).toBeVisible()
 
-  const drawerNav = page.locator('nav.shadow-lg')
-  await expect(drawerNav).toHaveClass(/-translate-x-full/)
+  // MUI's modal-backed drawer exposes role="dialog" (the standard modal-drawer
+  // pattern, since it traps focus behind a backdrop) and only mounts while open,
+  // so this also covers the closed state (no matching element counts as hidden).
+  const drawerNav = page.getByRole('dialog')
+  await expect(drawerNav).toBeHidden()
 
   await drawerToggle.click()
-  await expect(drawerNav).toHaveClass(/translate-x-0/)
+  await expect(drawerNav.getByRole('button', { name: 'Fixture Tournament A' })).toBeVisible()
+  await expect(drawerNav.getByRole('button', { name: 'Fixture Tournament B' })).toBeVisible()
+  await expect(drawerNav.getByRole('button', { name: 'Fixture Tournament C' })).toBeVisible()
 
-  const list = drawerNav.locator('ul')
-  await expect(list.getByRole('button', { name: 'Fixture Tournament A' })).toBeVisible()
-  await expect(list.getByRole('button', { name: 'Fixture Tournament B' })).toBeVisible()
-  await expect(list.getByRole('button', { name: 'Fixture Tournament C' })).toBeVisible()
-
-  await list.getByRole('button', { name: 'Fixture Tournament C' }).click()
-  await expect(drawerNav).toHaveClass(/-translate-x-full/)
+  await drawerNav.getByRole('button', { name: 'Fixture Tournament C' }).click()
+  await expect(drawerNav).toBeHidden()
   await expect(page.locator('#fixture-tournament-c')).toBeInViewport()
 })

@@ -1,4 +1,12 @@
-import { ChevronsDownUp, ChevronsUpDown, Menu } from 'lucide-react'
+import AppBar from '@mui/material/AppBar'
+import Toolbar from '@mui/material/Toolbar'
+import IconButton from '@mui/material/IconButton'
+import Typography from '@mui/material/Typography'
+import Box from '@mui/material/Box'
+import MenuIcon from '@mui/icons-material/Menu'
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
+import { HEADER_HEIGHT, DRAWER_WIDTH, RAIL_WIDTH } from '../theme'
 
 interface HeaderProps {
   isDesktopSidebarCollapsed: boolean
@@ -13,44 +21,66 @@ function Header({
   onExpandAll,
   onCollapseAll,
 }: HeaderProps) {
+  const sidebarWidth = isDesktopSidebarCollapsed ? RAIL_WIDTH : DRAWER_WIDTH
+
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-gray-200 bg-white px-2 transition-[margin-left] duration-200 md:pl-4 dark:border-gray-700 dark:bg-gray-900 ${
-        isDesktopSidebarCollapsed ? 'md:ml-10' : 'md:ml-64'
-      }`}
+    <AppBar
+      position="fixed"
+      color="inherit"
+      elevation={0}
+      sx={{
+        borderBottom: 1,
+        borderColor: 'divider',
+        ml: { md: `${sidebarWidth}px` },
+        width: { md: `calc(100% - ${sidebarWidth}px)` },
+        transition: (theme) => theme.transitions.create(['margin-left', 'width']),
+      }}
     >
-      <button
-        type="button"
-        onClick={onOpenDrawer}
-        aria-label="目次を開く"
-        className="rounded p-2 text-gray-700 hover:bg-gray-100 md:hidden dark:text-gray-200 dark:hover:bg-gray-800"
-      >
-        <Menu className="size-5" aria-hidden="true" />
-      </button>
-      <h1 className="flex-1 truncate px-1 text-center text-base font-bold text-gray-900 md:flex-none md:text-left md:text-xl dark:text-gray-100">
-        UNIDOL 審査員コメントまとめ
-      </h1>
-      <div className="flex shrink-0 gap-1">
-        <button
-          type="button"
+      <Toolbar sx={{ minHeight: HEADER_HEIGHT, height: HEADER_HEIGHT, px: { xs: 1, md: 2 } }}>
+        <IconButton
+          onClick={onOpenDrawer}
+          aria-label="目次を開く"
+          sx={{ display: { xs: 'inline-flex', md: 'none' } }}
+        >
+          <MenuIcon />
+        </IconButton>
+        <Typography
+          variant="h6"
+          component="h1"
+          noWrap
+          sx={{
+            flex: { xs: 1, md: 'none' },
+            textAlign: { xs: 'center', md: 'left' },
+            fontSize: { xs: '1rem', md: undefined },
+          }}
+        >
+          UNIDOL 審査員コメントまとめ
+        </Typography>
+        <Box sx={{ flex: 1, display: { xs: 'none', md: 'block' } }} />
+        <IconButton
           onClick={onExpandAll}
           title="全て展開"
-          className="flex items-center gap-1.5 rounded p-2 text-sm text-gray-700 hover:bg-gray-100 md:px-3 dark:text-gray-200 dark:hover:bg-gray-800"
+          aria-label="全て展開"
+          sx={{ borderRadius: 1 }}
         >
-          <ChevronsUpDown className="size-5" aria-hidden="true" />
-          <span className="sr-only md:not-sr-only">全て展開</span>
-        </button>
-        <button
-          type="button"
+          <UnfoldMoreIcon />
+          <Box component="span" sx={{ display: { xs: 'none', md: 'inline' }, ml: 0.5, fontSize: 14 }}>
+            全て展開
+          </Box>
+        </IconButton>
+        <IconButton
           onClick={onCollapseAll}
           title="全て折りたたむ"
-          className="flex items-center gap-1.5 rounded p-2 text-sm text-gray-700 hover:bg-gray-100 md:px-3 dark:text-gray-200 dark:hover:bg-gray-800"
+          aria-label="全て折りたたむ"
+          sx={{ borderRadius: 1 }}
         >
-          <ChevronsDownUp className="size-5" aria-hidden="true" />
-          <span className="sr-only md:not-sr-only">全て折りたたむ</span>
-        </button>
-      </div>
-    </header>
+          <UnfoldLessIcon />
+          <Box component="span" sx={{ display: { xs: 'none', md: 'inline' }, ml: 0.5, fontSize: 14 }}>
+            全て折りたたむ
+          </Box>
+        </IconButton>
+      </Toolbar>
+    </AppBar>
   )
 }
 

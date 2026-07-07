@@ -1,5 +1,15 @@
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import Box from '@mui/material/Box'
+import Drawer from '@mui/material/Drawer'
+import IconButton from '@mui/material/IconButton'
+import List from '@mui/material/List'
+import ListItemButton from '@mui/material/ListItemButton'
+import ListItemText from '@mui/material/ListItemText'
+import Typography from '@mui/material/Typography'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import CloseIcon from '@mui/icons-material/Close'
 import type { Tournament } from '../types'
+import { HEADER_HEIGHT, DRAWER_WIDTH, RAIL_WIDTH } from '../theme'
 
 interface TableOfContentsProps {
   tournaments: Tournament[]
@@ -22,86 +32,88 @@ function TableOfContents({
   }
 
   const list = (
-    <ul className="space-y-2">
+    <List>
       {tournaments.map((tournament) => (
-        <li key={tournament.id}>
-          <button
-            type="button"
-            onClick={() => scrollToTournament(tournament.id)}
-            className="text-left text-sm text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-          >
-            {tournament.label}
-          </button>
-        </li>
+        <ListItemButton key={tournament.id} onClick={() => scrollToTournament(tournament.id)}>
+          <ListItemText primary={tournament.label} />
+        </ListItemButton>
       ))}
-    </ul>
+    </List>
   )
 
   return (
     <>
       {/* Mobile drawer */}
-      <div
-        className={`fixed inset-x-0 top-14 bottom-0 z-50 md:hidden ${
-          isMobileDrawerOpen ? '' : 'pointer-events-none'
-        }`}
-        aria-hidden={!isMobileDrawerOpen}
+      <Drawer
+        variant="temporary"
+        anchor="left"
+        open={isMobileDrawerOpen}
+        onClose={onCloseMobileDrawer}
+        sx={{ display: { xs: 'block', md: 'none' } }}
+        slotProps={{
+          paper: {
+            component: 'nav',
+            sx: {
+              width: '75%',
+              maxWidth: 280,
+              top: HEADER_HEIGHT,
+              height: `calc(100% - ${HEADER_HEIGHT}px)`,
+            },
+          },
+        }}
       >
-        <div
-          className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ${
-            isMobileDrawerOpen ? 'opacity-100' : 'opacity-0'
-          }`}
-          onClick={onCloseMobileDrawer}
-        />
-        <nav
-          className={`absolute inset-y-0 left-0 w-3/4 max-w-70 overflow-y-auto bg-white p-4 shadow-lg transition-transform duration-200 dark:bg-gray-900 ${
-            isMobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">目次</span>
-            <button
-              type="button"
-              onClick={onCloseMobileDrawer}
-              aria-label="閉じる"
-              className="rounded p-1 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-            >
-              <X className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-          {list}
-        </nav>
-      </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
+          <Typography variant="subtitle2">目次</Typography>
+          <IconButton onClick={onCloseMobileDrawer} aria-label="閉じる" size="small">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
+        {list}
+      </Drawer>
 
       {/* Desktop sidebar */}
-      <nav
-        className={`fixed top-0 left-0 hidden h-screen flex-col overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-200 md:flex dark:border-gray-700 dark:bg-gray-900 ${
-          isDesktopCollapsed ? 'w-10' : 'w-64'
-        }`}
+      <Drawer
+        variant="permanent"
+        sx={{ display: { xs: 'none', md: 'block' } }}
+        slotProps={{
+          paper: {
+            component: 'nav',
+            sx: {
+              width: isDesktopCollapsed ? RAIL_WIDTH : DRAWER_WIDTH,
+              overflowX: 'hidden',
+              transition: (theme) => theme.transitions.create('width'),
+              boxSizing: 'border-box',
+            },
+          },
+        }}
       >
-        <div
-          className={`flex h-14 shrink-0 items-center border-b border-gray-200 dark:border-gray-700 ${
-            isDesktopCollapsed ? 'justify-center' : 'justify-between px-4'
-          }`}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            height: HEADER_HEIGHT,
+            px: isDesktopCollapsed ? 0 : 2,
+            justifyContent: isDesktopCollapsed ? 'center' : 'space-between',
+            borderBottom: 1,
+            borderColor: 'divider',
+          }}
         >
-          {!isDesktopCollapsed && (
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">目次</span>
-          )}
-          <button
-            type="button"
+          {!isDesktopCollapsed && <Typography variant="subtitle2">目次</Typography>}
+          <IconButton
             onClick={onToggleDesktopCollapsed}
+            size="small"
             title={isDesktopCollapsed ? 'サイドバーを開く' : 'サイドバーを閉じる'}
             aria-label={isDesktopCollapsed ? 'サイドバーを開く' : 'サイドバーを閉じる'}
-            className="rounded p-1 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
           >
             {isDesktopCollapsed ? (
-              <ChevronRight className="size-4" aria-hidden="true" />
+              <ChevronRightIcon fontSize="small" />
             ) : (
-              <ChevronLeft className="size-4" aria-hidden="true" />
+              <ChevronLeftIcon fontSize="small" />
             )}
-          </button>
-        </div>
-        {!isDesktopCollapsed && <div className="overflow-y-auto p-4">{list}</div>}
-      </nav>
+          </IconButton>
+        </Box>
+        {!isDesktopCollapsed && list}
+      </Drawer>
     </>
   )
 }

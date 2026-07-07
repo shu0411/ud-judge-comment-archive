@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import Box from '@mui/material/Box'
 import { tweetUrl } from '../constants'
 
 interface TweetEmbedProps {
@@ -34,11 +35,11 @@ function TweetEmbed({ tweetId }: TweetEmbedProps) {
   const url = tweetUrl(tweetId)
 
   return (
-    <div ref={containerRef} className="w-full max-w-full overflow-hidden sm:w-auto">
+    <Box ref={containerRef} sx={{ width: { xs: '100%', sm: 'auto' }, maxWidth: '100%', overflow: 'hidden' }}>
       <blockquote className="twitter-tweet">
         <a href={url}>{url}</a>
       </blockquote>
-    </div>
+    </Box>
   )
 }
 

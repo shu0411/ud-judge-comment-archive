@@ -1,12 +1,6 @@
-@import "tailwindcss";
-
 html,
 body {
   overflow-x: clip;
-}
-
-:root {
-  --topbar-height: 3.5rem;
 }
 
 .twitter-tweet-rendered,
