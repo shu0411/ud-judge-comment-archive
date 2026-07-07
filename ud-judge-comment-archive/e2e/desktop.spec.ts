@@ -40,15 +40,24 @@ test("fixtureデータの大会・日程が表示され、空状態のメッセ�
       .locator("#fixture-tournament-b")
       .getByRole("heading", { name: "Fixture Tournament B" }),
   ).toBeVisible();
+  // Tournament B is not the latest tournament, so it starts collapsed.
+  await page
+    .locator("#fixture-tournament-b")
+    .getByRole("button", { name: "Fixture Tournament B" })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Fixture Event B-1" }),
   ).toBeVisible();
 
-  // Tournament C has no events: its empty-state message is shown instead.
+  // Tournament C has no events: its empty-state message is shown instead,
+  // once expanded (it also starts collapsed as a non-latest tournament).
   const tournamentC = page.locator("#fixture-tournament-c");
   await expect(
     tournamentC.getByRole("heading", { name: "Fixture Tournament C" }),
   ).toBeVisible();
+  await tournamentC
+    .getByRole("button", { name: "Fixture Tournament C" })
+    .click();
   await expect(
     tournamentC.getByText("まだ日程が登録されていません。"),
   ).toBeVisible();
@@ -75,6 +84,13 @@ test("ツイートIDごとに埋め込みが表示され、共有アカウント
   await expect(
     page.getByRole("link", { name: tweetUrl("1111111111111111112") }),
   ).toBeVisible();
+
+  // Tournament B is not the latest tournament, so it starts collapsed and
+  // its tweets aren't embedded until it's expanded.
+  await page
+    .locator("#fixture-tournament-b")
+    .getByRole("button", { name: "Fixture Tournament B" })
+    .click();
   await expect(
     page.getByRole("link", { name: tweetUrl("2222222222222222222") }),
   ).toBeVisible();

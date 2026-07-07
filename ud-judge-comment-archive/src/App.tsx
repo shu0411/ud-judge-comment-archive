@@ -12,7 +12,7 @@ const tournaments = tournamentsData as Tournament[]
 
 function App() {
   const [expandedTournaments, setExpandedTournaments] = useState<Set<string>>(
-    () => new Set(tournaments.map((t) => t.id)),
+    () => new Set(tournaments.length > 0 ? [tournaments[0].id] : []),
   )
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(
     () => new Set(tournaments.flatMap((t) => t.events.map((e) => e.id))),
