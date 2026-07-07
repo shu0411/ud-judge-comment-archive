@@ -30,6 +30,9 @@ function EventSection({ event, isExpanded, onToggle }: EventSectionProps) {
           top: HEADER_HEIGHT * 2,
           zIndex: 1,
           bgcolor: 'background.paper',
+          minHeight: 40,
+          '&.Mui-expanded': { minHeight: 40 },
+          '& .MuiAccordionSummary-content': { margin: '8px 0' },
           px: { xs: 1, md: 2 },
         }}
       >

@@ -5,18 +5,15 @@ import List from '@mui/material/List'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import Typography from '@mui/material/Typography'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import CloseIcon from '@mui/icons-material/Close'
 import type { Tournament } from '../types'
-import { HEADER_HEIGHT, DRAWER_WIDTH, RAIL_WIDTH } from '../theme'
+import { HEADER_HEIGHT, DRAWER_WIDTH } from '../theme'
 
 interface TableOfContentsProps {
   tournaments: Tournament[]
   isMobileDrawerOpen: boolean
   onCloseMobileDrawer: () => void
   isDesktopCollapsed: boolean
-  onToggleDesktopCollapsed: () => void
 }
 
 function TableOfContents({
@@ -24,7 +21,6 @@ function TableOfContents({
   isMobileDrawerOpen,
   onCloseMobileDrawer,
   isDesktopCollapsed,
-  onToggleDesktopCollapsed,
 }: TableOfContentsProps) {
   function scrollToTournament(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -56,8 +52,6 @@ function TableOfContents({
             sx: {
               width: '75%',
               maxWidth: 280,
-              top: HEADER_HEIGHT,
-              height: `calc(100% - ${HEADER_HEIGHT}px)`,
             },
           },
         }}
@@ -79,7 +73,7 @@ function TableOfContents({
           paper: {
             component: 'nav',
             sx: {
-              width: isDesktopCollapsed ? RAIL_WIDTH : DRAWER_WIDTH,
+              width: isDesktopCollapsed ? 0 : DRAWER_WIDTH,
               overflowX: 'hidden',
               transition: (theme) => theme.transitions.create('width'),
               boxSizing: 'border-box',
@@ -87,32 +81,22 @@ function TableOfContents({
           },
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            height: HEADER_HEIGHT,
-            px: isDesktopCollapsed ? 0 : 2,
-            justifyContent: isDesktopCollapsed ? 'center' : 'space-between',
-            borderBottom: 1,
-            borderColor: 'divider',
-          }}
-        >
-          {!isDesktopCollapsed && <Typography variant="subtitle2">目次</Typography>}
-          <IconButton
-            onClick={onToggleDesktopCollapsed}
-            size="small"
-            title={isDesktopCollapsed ? 'サイドバーを開く' : 'サイドバーを閉じる'}
-            aria-label={isDesktopCollapsed ? 'サイドバーを開く' : 'サイドバーを閉じる'}
-          >
-            {isDesktopCollapsed ? (
-              <ChevronRightIcon fontSize="small" />
-            ) : (
-              <ChevronLeftIcon fontSize="small" />
-            )}
-          </IconButton>
-        </Box>
-        {!isDesktopCollapsed && list}
+        {!isDesktopCollapsed && (
+          <>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                height: HEADER_HEIGHT,
+                px: 2,
+                boxShadow: (theme) => `inset 0 -1px 0 0 ${theme.palette.divider}`,
+              }}
+            >
+              <Typography variant="subtitle2">目次</Typography>
+            </Box>
+            {list}
+          </>
+        )}
       </Drawer>
     </>
   )

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Box from '@mui/material/Box'
 import tournamentsData from '@data/tweetList'
 import type { Tournament } from './types'
-import { HEADER_HEIGHT, DRAWER_WIDTH, RAIL_WIDTH } from './theme'
+import { HEADER_HEIGHT, DRAWER_WIDTH } from './theme'
 import Header from './components/Header'
 import SiteNotice from './components/SiteNotice'
 import TableOfContents from './components/TableOfContents'
@@ -58,6 +58,7 @@ function App() {
       <Header
         isDesktopSidebarCollapsed={isDesktopSidebarCollapsed}
         onOpenDrawer={() => setIsMobileDrawerOpen(true)}
+        onToggleDesktopSidebar={() => setIsDesktopSidebarCollapsed((prev) => !prev)}
         onExpandAll={expandAll}
         onCollapseAll={collapseAll}
       />
@@ -66,17 +67,16 @@ function App() {
         isMobileDrawerOpen={isMobileDrawerOpen}
         onCloseMobileDrawer={() => setIsMobileDrawerOpen(false)}
         isDesktopCollapsed={isDesktopSidebarCollapsed}
-        onToggleDesktopCollapsed={() => setIsDesktopSidebarCollapsed((prev) => !prev)}
       />
       <Box
         sx={{
           pt: `${HEADER_HEIGHT}px`,
           transition: (theme) => theme.transitions.create('margin-left'),
-          ml: { md: `${isDesktopSidebarCollapsed ? RAIL_WIDTH : DRAWER_WIDTH}px` },
+          ml: { md: `${isDesktopSidebarCollapsed ? 0 : DRAWER_WIDTH}px` },
         }}
       >
         <SiteNotice />
-        <Box component="main" sx={{ px: { xs: 1, md: 2 }, py: 2 }}>
+        <Box component="main" sx={{ px: { xs: 1, md: 2 }, pt: 3, pb: 2 }}>
           <TournamentList
             tournaments={tournaments}
             expandedTournaments={expandedTournaments}
