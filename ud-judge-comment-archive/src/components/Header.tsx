@@ -63,7 +63,7 @@ function Header({
           sx={{
             flex: { xs: 1, md: 'none' },
             textAlign: { xs: 'center', md: 'left' },
-            fontSize: { xs: '1rem', md: undefined },
+            fontSize: { xs: '1rem', md: '1.375rem' },
           }}
         >
           UNIDOL 審査員コメントまとめ
