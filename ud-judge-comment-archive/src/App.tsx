@@ -32,6 +32,10 @@ function App() {
     })
   }
 
+  function expandTournament(id: string) {
+    setExpandedTournaments((prev) => (prev.has(id) ? prev : new Set(prev).add(id)))
+  }
+
   function toggleEvent(id: string) {
     setExpandedEvents((prev) => {
       const next = new Set(prev)
@@ -67,6 +71,7 @@ function App() {
         isMobileDrawerOpen={isMobileDrawerOpen}
         onCloseMobileDrawer={() => setIsMobileDrawerOpen(false)}
         isDesktopCollapsed={isDesktopSidebarCollapsed}
+        onExpandTournament={expandTournament}
       />
       <Box
         sx={{

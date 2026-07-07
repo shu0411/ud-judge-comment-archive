@@ -14,6 +14,7 @@ interface TableOfContentsProps {
   isMobileDrawerOpen: boolean
   onCloseMobileDrawer: () => void
   isDesktopCollapsed: boolean
+  onExpandTournament: (id: string) => void
 }
 
 function TableOfContents({
@@ -21,8 +22,10 @@ function TableOfContents({
   isMobileDrawerOpen,
   onCloseMobileDrawer,
   isDesktopCollapsed,
+  onExpandTournament,
 }: TableOfContentsProps) {
   function scrollToTournament(id: string) {
+    onExpandTournament(id)
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     onCloseMobileDrawer()
   }

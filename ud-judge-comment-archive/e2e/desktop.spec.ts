@@ -148,7 +148,14 @@ test("目次に大会名が一覧表示され、クリックすると該当箇�
   ).toBeVisible();
 
   await toc.getByRole("button", { name: "Fixture Tournament C" }).click();
-  await expect(page.locator("#fixture-tournament-c")).toBeInViewport();
+  const tournamentC = page.locator("#fixture-tournament-c");
+  await expect(tournamentC).toBeInViewport();
+
+  // Tournament C starts collapsed (it's not the latest tournament); clicking
+  // its ToC entry should expand it, not just scroll to its collapsed header.
+  await expect(
+    tournamentC.getByText("まだ日程が登録されていません。"),
+  ).toBeVisible();
 });
 
 test("prefers-color-schemeに応じてライト/ダークテーマが切り替わる", async ({
