@@ -21,6 +21,7 @@ function TweetEmbed({ tweetId }: TweetEmbedProps) {
       const blockquote = document.createElement('blockquote')
       blockquote.className = 'twitter-tweet'
       blockquote.dataset.theme = theme
+      blockquote.dataset.conversation = 'none'
       const anchor = document.createElement('a')
       anchor.href = url
       anchor.textContent = url
