@@ -21,7 +21,7 @@ function EventSection({ event, isExpanded, onToggle }: EventSectionProps) {
       elevation={0}
       disableGutters
       sx={{ borderTop: 1, borderColor: 'divider', '&:first-of-type': { borderTop: 0 } }}
-      slotProps={{ transition: { unmountOnExit: true } }}
+      slotProps={{ transition: { mountOnEnter: true } }}
     >
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}

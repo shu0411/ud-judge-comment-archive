@@ -1,20 +1,44 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Box from '@mui/material/Box'
+import Skeleton from '@mui/material/Skeleton'
 import { tweetUrl } from '../constants'
 
 interface TweetEmbedProps {
   tweetId: string
 }
 
+// ビューポートからこの距離まで近づいたら読み込みを開始する（先読みマージン）
+const PRELOAD_ROOT_MARGIN = '600px'
+
 function TweetEmbed({ tweetId }: TweetEmbedProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const widgetContainerRef = useRef<HTMLDivElement>(null)
+  const [isNearViewport, setIsNearViewport] = useState(false)
   const url = tweetUrl(tweetId)
 
   useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setIsNearViewport(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: PRELOAD_ROOT_MARGIN },
+    )
+    observer.observe(root)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!isNearViewport) return
     let cancelled = false
 
     function renderWidget(theme: 'light' | 'dark') {
-      const container = containerRef.current
+      const container = widgetContainerRef.current
       if (!container) return
 
       container.innerHTML = ''
@@ -28,20 +52,10 @@ function TweetEmbed({ tweetId }: TweetEmbedProps) {
       blockquote.appendChild(anchor)
       container.appendChild(blockquote)
 
-      let attempts = 0
-      function tryLoad() {
-        if (cancelled) return
-        const twttr = window.twttr
-        if (twttr?.widgets && containerRef.current) {
-          twttr.widgets.load(containerRef.current)
-          return
-        }
-        if (attempts < 20) {
-          attempts += 1
-          setTimeout(tryLoad, 100)
-        }
-      }
-      tryLoad()
+      window.twttr?.ready(() => {
+        if (cancelled || !widgetContainerRef.current) return
+        window.twttr?.widgets?.load(widgetContainerRef.current)
+      })
     }
 
     const mql = window.matchMedia('(prefers-color-scheme: dark)')
@@ -56,9 +70,14 @@ function TweetEmbed({ tweetId }: TweetEmbedProps) {
       cancelled = true
       mql.removeEventListener('change', handleChange)
     }
-  }, [url])
+  }, [url, isNearViewport])
 
-  return <Box ref={containerRef} sx={{ width: { xs: '100%', sm: 'auto' }, maxWidth: '100%', overflow: 'hidden' }} />
+  return (
+    <Box ref={rootRef} sx={{ width: { xs: '100%', sm: 'auto' }, maxWidth: '100%', overflow: 'hidden' }}>
+      {!isNearViewport && <Skeleton variant="rounded" width={550} height={200} sx={{ maxWidth: '100%' }} />}
+      <Box ref={widgetContainerRef} />
+    </Box>
+  )
 }
 
 export default TweetEmbed

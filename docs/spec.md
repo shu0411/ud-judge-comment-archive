@@ -93,7 +93,7 @@ App                        # 開閉状態・ドロワー/サイドバー状態�
 | 個別開閉 | TournamentSection・EventSection それぞれ個別にクリックで開閉可能（MUI Accordion） |
 | 空状態 | 日程のない大会は「まだ日程が登録されていません。」、ツイートのない日程は「まだコメントが登録されていません。」を表示 |
 
-閉じたセクションの中身は `unmountOnExit` でDOMからアンマウントする。
+セクションの中身は `mountOnEnter` で初回展開時に初めてマウントし、以降は閉じてもDOMに保持する（再度開いたときにツイートの再読み込みが発生しない）。
 
 大会・日程の見出し（AccordionSummary）は `position: sticky` でスクロール中も画面上部に張り付く（大会はヘッダー直下、日程は大会見出しの直下）。
 
@@ -136,8 +136,9 @@ Mobile: ┌───────────────────────
 
 ### ツイート埋め込み
 
-- X（Twitter）公式ウィジェットスクリプト（`widgets.js`、`index.html` で読み込み）を使用
-- `<blockquote class="twitter-tweet">` をDOM生成し `window.twttr.widgets.load()` で描画。`twttr` が未ロードの場合は100ms間隔で最大20回リトライ
+- X（Twitter）公式ウィジェットスクリプト（`widgets.js`）を使用。`index.html` に公式のブートストラップスニペットを置き、`window.twttr.ready()` でロード完了を待つ（ポーリング不要）
+- **ビューポート遅延読み込み**: `IntersectionObserver`（`rootMargin: 600px` の先読み）でツイートが画面に近づいたときに初めて埋め込みを生成する。画面から遠いツイートは固定サイズの `Skeleton` プレースホルダーを表示し、スクロールに応じて上から順に読み込まれる
+- 読み込み開始後は `<blockquote class="twitter-tweet">` をDOM生成し `window.twttr.widgets.load()` で描画
 - `data-conversation="none"` を指定し、スレッド（リプライ元）は表示しない
 - `data-theme` に `prefers-color-scheme` の値を反映し、OSテーマ変更時はウィジェットを再生成して追従
 - 日程内のツイートは `flex-wrap` で横に並べ、折り返して表示

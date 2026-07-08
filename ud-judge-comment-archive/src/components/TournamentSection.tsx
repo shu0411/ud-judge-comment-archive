@@ -33,7 +33,7 @@ function TournamentSection({
         sx={{ borderBottom: 1, borderColor: 'divider' }}
         slotProps={{
           heading: { component: 'h2' },
-          transition: { unmountOnExit: true },
+          transition: { mountOnEnter: true },
         }}
       >
         <AccordionSummary

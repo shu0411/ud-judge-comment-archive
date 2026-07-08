@@ -96,6 +96,43 @@ test("ツイートIDごとに埋め込みが表示され、共有アカウント
   ).toBeVisible();
 });
 
+test("画面外のツイートはスクロールするまで埋め込まれず、近づくと表示される", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  // Event A-3 の末尾のツイートは初期ビューポートから十分離れているため、
+  // スクロールするまで埋め込みが生成されない。
+  const lastTweetLink = page.getByRole("link", {
+    name: tweetUrl("3333333333333333320"),
+  });
+  await expect(
+    page.getByRole("heading", { name: "Fixture Event A-3" }),
+  ).toBeVisible();
+  await expect(lastTweetLink).toBeHidden();
+
+  // ページ下部までスクロールすると読み込まれて表示される。
+  await page.locator("#fixture-tournament-b").scrollIntoViewIfNeeded();
+  await expect(lastTweetLink).toBeVisible();
+});
+
+test("大会を閉じて再度開いてもツイートが表示される", async ({ page }) => {
+  await page.goto("/");
+  const tweetLink = page.getByRole("link", {
+    name: tweetUrl("1111111111111111111"),
+  });
+  await expect(tweetLink).toBeVisible();
+
+  const tournamentA = page
+    .locator("#fixture-tournament-a")
+    .getByRole("button", { name: "Fixture Tournament A" });
+  await tournamentA.click();
+  await expect(tweetLink).toBeHidden();
+
+  await tournamentA.click();
+  await expect(tweetLink).toBeVisible();
+});
+
 test("全て折りたたむ・全て展開する・個別の開閉が正しく動作する", async ({
   page,
 }) => {
