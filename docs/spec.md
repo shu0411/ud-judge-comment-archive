@@ -6,9 +6,9 @@ UNIDOLという大学生アイドルの大会における、審査員コメン�
 
 出場者が過去の審査員コメントを振り返って流し読みできることを主な目的とする。
 
-**サイトタイトル**: UNIDOL 審査員コメントまとめ  
-**リポジトリ名**: `ud-judge-comment-archive`  
-**注意**: このサイトはファンによる非公式サイトであり、UNIDOL公式とは無関係である旨をHeader内に明記すること。
+**サイトタイトル**: UNIDOL 審査員コメントまとめ
+**リポジトリ名**: `ud-judge-comment-archive`
+**注意**: このサイトはファンによる非公式サイトであり、UNIDOL公式とは無関係である旨をページ内（ヘッダー直下の注意書き）に明記すること。
 
 ---
 
@@ -16,16 +16,20 @@ UNIDOLという大学生アイドルの大会における、審査員コメン�
 
 | 項目 | 選定内容 |
 | ------ | --------- |
-| フレームワーク | Vite + React |
-| スタイリング | Tailwind CSS |
+| フレームワーク | Vite + React + TypeScript |
+| UIライブラリ | MUI（Material UI）+ Emotion |
+| アイコン | `@mui/icons-material` |
 | データ管理 | `src/data/tweetList.json`（ビルド時にバンドル） |
+| E2Eテスト | Playwright |
 | ホスティング | Netlify（GitHub連携による自動デプロイ） |
+
+Viteプロジェクト本体はリポジトリルート直下ではなく `ud-judge-comment-archive/` にネストしている。
 
 ---
 
 ## データ構造
 
-`src/data/tweetList.json` に以下の形式で定義する。  
+`src/data/tweetList.json` に以下の形式で定義する。
 配列の先頭が最新大会（新しい順）。
 
 ```json
@@ -43,37 +47,36 @@ UNIDOLという大学生アイドルの大会における、審査員コメン�
         "id": "unidol-2026-summer-repechage",
         "label": "敗者復活戦",
         "tweets": []
-      },
-      {
-        "id": "unidol-2026-summer-kanto3",
-        "label": "関東予選3日目",
-        "tweets": []
       }
     ]
   },
   {
-    "id": "unidol-2025-26-winter",
+    "id": "unidol-2025-winter",
     "label": "UNIDOL 2025-26 Winter",
     "events": []
   }
 ]
 ```
 
-投稿アカウントは単一（運営者本人のXアカウント）である前提のため、`tweets` はツイートIDの配列のみ保持する。ツイートURLはアカウントハンドル（定数管理）とIDから組み立て、本文はX埋め込みウィジェットで取得・表示する。
+型定義は `src/types.ts` の `Tournament` / `Event`。
+
+投稿アカウントは単一（運営者本人のXアカウント）である前提のため、`tweets` はツイートIDの配列のみ保持する。ツイートURLはアカウントハンドル（`src/constants.ts` の `TWEET_AUTHOR_HANDLE`）とIDから `tweetUrl()` で組み立て、本文はX埋め込みウィジェットで取得・表示する。
+
+データはimport文で直接読まず、Viteのエイリアス `@data/tweetList` 経由で読み込む。E2Eテスト時（`--mode e2e`）はこのエイリアスが `e2e/fixtures/tweetList.json` に差し替わる（`vite.config.ts` 参照）。
 
 ---
 
 ## コンポーネント構成
 
 ```txt
-App
-├ Header                 # サイトタイトル・非公式表記
-├ Controls               # 「全て展開」「全て折りたたむ」ボタン
-├ TableOfContents        # PC: 固定サイドバー / Mobile: ドロワー形式
+App                        # 開閉状態・ドロワー/サイドバー状態を管理
+├ Header                   # 固定AppBar（1行）
+├ TableOfContents          # PC: 開閉可能サイドバー / Mobile: ドロワー
+├ SiteNotice               # サイト説明・非公式表記・免責の注意書き
 └ TournamentList
-   └ TournamentSection   # 大会単位（id付き、アンカーリンク対象・開閉可）
-      └ EventSection     # 日程単位（開閉可）
-         └ TweetEmbed    # X埋め込みウィジェット
+   └ TournamentSection     # 大会単位（id付き、アンカーリンク対象・開閉可）
+      └ EventSection       # 日程単位（開閉可）
+         └ TweetEmbed      # X埋め込みウィジェット
 ```
 
 ---
@@ -84,31 +87,66 @@ App
 
 | 機能 | 仕様 |
 | ------ | ------ |
-| 初期表示 | 全展開（TournamentSection・EventSection ともに開いた状態） |
-| 「全て折りたたむ」ボタン | TournamentSection を全て閉じる（EventSection・ツイートも隠れる） |
-| 「全て展開する」ボタン | 全展開状態に戻す |
-| 個別開閉 | TournamentSection・EventSection それぞれ個別にクリックで開閉可能 |
+| 初期表示 | 最新大会（配列先頭）の TournamentSection のみ展開。EventSection は全て展開状態 |
+| 「全て折りたたむ」 | TournamentSection を全て閉じる（EventSection・ツイートも隠れる） |
+| 「全て展開」 | TournamentSection・EventSection を全て開く |
+| 個別開閉 | TournamentSection・EventSection それぞれ個別にクリックで開閉可能（MUI Accordion） |
+| 空状態 | 日程のない大会は「まだ日程が登録されていません。」、ツイートのない日程は「まだコメントが登録されていません。」を表示 |
+
+閉じたセクションの中身は `unmountOnExit` でDOMからアンマウントする。
+
+大会・日程の見出し（AccordionSummary）は `position: sticky` でスクロール中も画面上部に張り付く（大会はヘッダー直下、日程は大会見出しの直下）。
+
+### ヘッダー
+
+`position: fixed` の1行AppBar（高さは `theme.ts` の `HEADER_HEIGHT` = 56px）。
+
+```txt
+PC:     ┌──────────────────────────────────────────────────┐
+        │ [〈] UNIDOL 審査員コメントまとめ   [⤢全て展開][⤡全て折りたたむ] │
+        └──────────────────────────────────────────────────┘
+Mobile: ┌──────────────────────────────┐
+        │ [☰]  タイトル(中央)   [⤢][⤡] │
+        └──────────────────────────────┘
+```
+
+- 左端: Mobileではハンバーガーボタン（目次ドロワーを開く）、PCではサイドバー開閉ボタン（開いている時は `〈`、閉じている時は `☰`）
+- タイトル: Mobileでは中央寄せ、PCでは左寄せで大きめのフォントサイズ
+- 右端: 全展開・全折りたたみボタン。アイコンは `UnfoldMore` / `UnfoldLess`。PCではアイコンにテキストラベルを併記、Mobileではアイコンのみ。`title` 属性でツールチップ表示
+- PCではサイドバーの開閉に合わせてヘッダーの左端位置・幅がアニメーションで追従する
+
+### 注意書き（SiteNotice）
+
+ヘッダー直下のコンテンツ領域に以下を表示する:
+
+- サイトの説明（審査員コメントのメモ一覧である旨）
+- ファンによる非公式サイトであり、UNIDOL公式とは無関係である旨
+- 一個人の解釈によるメモのため正確でない可能性がある旨の免責
 
 ### 目次
 
 | 環境 | 挙動 |
 | ------ | ------ |
-| PC（md以上） | 左固定サイドバーとして常時表示 |
-| Mobile（md未満） | 画面上部に「☰ 目次」ボタンを設置し、タップでドロワー展開 |
-| 目次クリック | 該当 TournamentSection へスムーズスクロール |
+| PC（md以上） | 左サイドバー（MUI permanent Drawer、幅 `DRAWER_WIDTH` = 256px）。ヘッダーのボタンで開閉でき、閉じると幅0にアニメーションで縮む（コンテンツがワイドになる） |
+| Mobile（md未満） | ヘッダーのハンバーガーボタンで左からスライドインするドロワー（MUI temporary Drawer、幅は画面の75%・最大280px）。オーバーレイのタップまたはドロワー内の✕ボタンで閉じる |
+| 目次クリック | 該当の大会を展開したうえでスムーズスクロール（Mobileではドロワーも閉じる） |
 | 目次の内容 | 大会名のみ列挙（日程は目次には含めない） |
+
+目次クリック時、閉じていた大会の展開アニメーション中はページ高さが変わりスクロール位置がずれるため、`ResizeObserver` でサイズ変化が落ち着いたのを検知して再度スクロールし位置を補正する。
 
 ### ツイート埋め込み
 
-- X（Twitter）公式ウィジェットスクリプト（`widgets.js`）を使用
-- `<blockquote class="twitter-tweet">` + `window.twttr.widgets.load()` で実装
-- EventSection の開閉アニメーション後にも正しく描画されるよう、`load()` の呼び出しタイミングに注意
+- X（Twitter）公式ウィジェットスクリプト（`widgets.js`、`index.html` で読み込み）を使用
+- `<blockquote class="twitter-tweet">` をDOM生成し `window.twttr.widgets.load()` で描画。`twttr` が未ロードの場合は100ms間隔で最大20回リトライ
+- `data-conversation="none"` を指定し、スレッド（リプライ元）は表示しない
+- `data-theme` に `prefers-color-scheme` の値を反映し、OSテーマ変更時はウィジェットを再生成して追従
+- 日程内のツイートは `flex-wrap` で横に並べ、折り返して表示
 
 ### テーマ
 
-- モノトーン（白・グレー・黒）ベースのシンプルなデザイン
-- `prefers-color-scheme` に従ってライト/ダークを自動切替
-- Tailwind CSS の `dark:` バリアントを使用
+- MUIの `colorSchemes`（light/dark）を使用し、`defaultMode="system"` でOS設定（`prefers-color-scheme`）に自動追従
+- 背景色をカスタマイズ: ライト `#F8FAFC` / ダーク `#1E293B`（`background.default` と `background.paper` 共通）
+- `responsiveFontSizes` で画面幅に応じたフォントサイズ調整
 
 ---
 
@@ -117,30 +155,28 @@ App
 ### PC
 
 ```txt
-┌─────────────────────────────────────────────┐
-│  Header: UNIDOL 審査員コメントまとめ（非公式）  │
-├──────────┬──────────────────────────────────┤
-│  目次    │  [全て展開] [全て折りたたむ]        │
-│          │                                  │
-│  2026S   │  ## UNIDOL 2026 Summer           │
-│  2025W   │    ### 決勝戦                    │
-│  2025F   │      [tweet] [tweet] ...         │
-│          │    ### 敗者復活戦                 │
-│          │      [tweet] ...                 │
-│          │                                  │
-│          │  ## UNIDOL 2025-26 Winter        │
-│          │    ...                           │
-└──────────┴──────────────────────────────────┘
+┌────────┬─────────────────────────────────────────┐
+│ 目次   │ [〈] タイトル      [全て展開][全て折りたたむ] │ ← 固定ヘッダー
+│        ├─────────────────────────────────────────┤
+│ 2026S  │ 注意書き（説明・非公式表記・免責）          │
+│ 2025W  ├─────────────────────────────────────────┤
+│ 2025F  │ ## UNIDOL 2026 Summer                   │
+│        │   ### 決勝戦                             │
+│        │     [tweet] [tweet] ...                 │
+│        │   ### 敗者復活戦                          │
+│        │     ...                                 │
+│        │ ## UNIDOL 2025-26 Winter（折りたたみ）     │
+└────────┴─────────────────────────────────────────┘
 ```
 
 ### Mobile
 
 ```txt
 ┌──────────────────────┐
-│ ☰ 目次  タイトル     │
+│ [☰]  タイトル  [⤢][⤡] │ ← 固定ヘッダー
 ├──────────────────────┤
-│ [全て展開][全て折りたたむ] │
-│                      │
+│ 注意書き              │
+├──────────────────────┤
 │ ## UNIDOL 2026 Summer│
 │   ### 決勝戦         │
 │     [tweet]          │
@@ -152,19 +188,27 @@ App
 
 ---
 
+## E2Eテスト
+
+Playwrightによるe2eテストを `e2e/` に置く（`npm run test:e2e`）。
+
+- `desktop.spec.ts` / `mobile.spec.ts` の2プロジェクト構成（ビューポート幅 1280px / 390px）
+- テスト実行時は `vite --mode e2e` で開発サーバーを起動し、データを `e2e/fixtures/tweetList.json` に差し替える
+- CSSクラスやDOM構造ではなく、ユーザーから見える挙動（見出し・ボタン・テキストの表示）をアサートする
+
+---
+
 ## Netlify 設定
 
-- Viteプロジェクトはリポジトリルート直下ではなく `ud-judge-comment-archive/` にネストしているため、`netlify.toml` はリポジトリルートに置き、`base`/`publish` でその配下を指定する
-- ビルドコマンド: `npm run build`
-- 公開ディレクトリ: `ud-judge-comment-archive/dist`
+- Viteプロジェクトが `ud-judge-comment-archive/` にネストしているため、`netlify.toml` はリポジトリルートに置き、`base` でその配下を指定する（`publish` は `base` からの相対パス）
 - GitHubリポジトリと連携し、`main` ブランチへのpushで自動デプロイ
-- SPA向けリダイレクト設定を含めること
+- SPA向けリダイレクト設定を含める
 
 ```toml
 [build]
   base = "ud-judge-comment-archive/"
   command = "npm run build"
-  publish = "ud-judge-comment-archive/dist"
+  publish = "dist"
 
 [[redirects]]
   from = "/*"
