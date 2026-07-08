@@ -5,7 +5,7 @@ UNIDOL審査員コメントまとめサイト。UNIDOLの各大会・日程ご�
 ## 技術スタック
 
 - Vite + React + TypeScript
-- Tailwind CSS v4
+- MUI（Material UI）+ Emotion
 - データはビルド時にバンドルする `src/data/tweetList.json`（外部APIやバックエンドは使用しない）
 - Netlify（GitHub連携による自動デプロイ）
 
