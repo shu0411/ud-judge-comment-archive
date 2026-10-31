@@ -1,0 +1,50 @@
+name: Claude Agent - Implement Issue
+
+# 設計済みのIssueに `implement-by-claude` ラベルが付与されたら、
+# Claude Codeが実装してPull Requestを作成する。
+# Claudeへの指示（進め方・禁止事項・PR本文フォーマット）は共通Action側にあるため、
+# このファイルには実行環境の準備だけを書く。
+# 導入時に、リポジトリの Secrets に `CLAUDE_CODE_OAUTH_TOKEN` を登録する。
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  implement:
+    if: github.event.label.name == 'implement-by-claude'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      # Pull Requestを作成できなかったときに、状況をIssueへコメントするために必要
+      issues: write
+      id-token: write
+      actions: read
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: ud-judge-comment-archive/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ud-judge-comment-archive
+        run: npm ci
+
+      # Claudeが `npm run test:e2e` を実行できるよう、ブラウザを用意する
+      - name: Install Playwright browser
+        working-directory: ud-judge-comment-archive
+        run: npx playwright install --with-deps chromium
+
+      - uses: shu0411/.github/actions/implement-issue@main
+        with:
+          claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          additional-allowed-tools: "Bash(npm:*),Bash(npx:*)"
+          # このリポジトリ固有の追加指示があれば書く
+          # extra-prompt: ""
