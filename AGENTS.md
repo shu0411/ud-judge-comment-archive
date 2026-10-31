@@ -8,7 +8,7 @@ Viteアプリ本体はルート直下ではなく `ud-judge-comment-archive/` �
 
 ```txt
 /
-├ .github/workflows/      # Issue駆動フロー（詳細は shu0411/.github）の呼び出し側workflow
+├ .github/workflows/      # Issue駆動フロー・Dependabot PRレビュー（詳細は shu0411/.github）の呼び出し側workflow
 ├ docs/spec.md            # 仕様書（挙動を変えたら更新する）
 ├ netlify.toml            # デプロイ設定（base/publishはネスト構成前提）
 └ ud-judge-comment-archive/   # Vite + React + TypeScript アプリ本体
