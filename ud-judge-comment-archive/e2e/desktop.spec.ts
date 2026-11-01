@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./test.ts";
 import { tweetUrl } from "../src/constants.ts";
 
 test("ヘッダーにサイトタイトルと非公式の注意書きが表示される", async ({

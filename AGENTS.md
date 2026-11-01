@@ -63,6 +63,7 @@ Viteアプリ本体はルート直下ではなく `ud-judge-comment-archive/` �
 ## テスト
 
 - e2eテストは実データではなくfixture（`e2e/fixtures/tweetList.json`）に対して書く
+- specの `test` / `expect` は `@playwright/test` ではなく `e2e/test.ts` からimportする（`widgets.js` を差し替えるため）
 - **見た目の実装詳細ではなく、ユーザーに見える挙動をアサートする。** CSSクラスやDOM構造ではなく、ロール・見出し・テキストの表示/非表示で検証する（スタイルそのものが要件の場合を除く）
 - desktop（1280px）/ mobile（390px）の2プロジェクト構成。レスポンシブな挙動は両方で確認する
 - `workers: 1` 固定（サンドボックス環境での並列起動タイムアウト対策）。変更しない
