@@ -14,13 +14,22 @@ body:
       required: true
 
   - type: input
-    id: tournament-name
+    id: tournament-year
     attributes:
-      label: 大会名
+      label: 年度
       description: >-
-        例: `UNIDOL 2026 Summer` / `UNIDOL 2025 Fresh` / `UNIDOL 2026-27 Winter`。
-        「既存の大会に追加」で空欄にすると最新大会になります。「新しい大会を作成して追加」では必須です。
-      placeholder: UNIDOL 2026 Summer
+        Summer・Freshは `2026`、Winterは `2026-27` の形式で入力してください。
+        「既存の大会に追加」で年度・大会種類の両方を未指定にすると最新大会になります。「新しい大会を作成して追加」では必須です。
+      placeholder: "2026"
+
+  - type: dropdown
+    id: tournament-season
+    attributes:
+      label: 大会種類
+      options:
+        - Summer
+        - Winter
+        - Fresh
 
   - type: dropdown
     id: event
@@ -47,12 +56,6 @@ body:
         - "1"
         - "2"
         - "3"
-        - "4"
-        - "5"
-        - "6"
-        - "7"
-        - "8"
-        - "9"
       default: 0
     validations:
       required: true
