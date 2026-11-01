@@ -49,11 +49,24 @@ function toOptional(value: string): string | null {
   return value === NO_RESPONSE ? null : value
 }
 
+function buildTournamentName(year: string | null, season: string | null): string | null {
+  if (year === null && season === null) {
+    return null
+  }
+  if (year === null || season === null) {
+    throw new IssueBodyParseError('年度と大会種類は、両方指定するか両方未指定にしてください')
+  }
+  return `UNIDOL ${year} ${season}`
+}
+
 export function parseIssueBody(body: string): IssueFormInput {
   const sections = extractSections(body)
 
   const operation = getSection(sections, '操作')
-  const tournamentName = toOptional(getSection(sections, '大会名'))
+  const tournamentName = buildTournamentName(
+    toOptional(getSection(sections, '年度')),
+    toOptional(getSection(sections, '大会種類')),
+  )
   const eventName = getSection(sections, '日程')
   const day = getSection(sections, '日目')
   const tweetsText = getSection(sections, 'ツイート')

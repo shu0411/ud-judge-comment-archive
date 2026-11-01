@@ -38,7 +38,7 @@ export function parseTournamentLabel(label: string): ParsedTournamentLabel {
   }
 
   throw new ResolveTargetError(
-    `大会名「${label}」の形式が不正です。「UNIDOL {年} Summer」「UNIDOL {年} Fresh」「UNIDOL {年}-{翌年2桁} Winter」のいずれかの形式で入力してください`,
+    `大会名「${label}」の形式が不正です。年度はSummer・Freshなら「2026」、Winterなら「2026-27」の形式で指定してください`,
   )
 }
 
