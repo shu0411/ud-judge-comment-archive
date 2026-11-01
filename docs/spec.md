@@ -20,6 +20,7 @@ UNIDOLという大学生アイドルの大会における、審査員コメン�
 | UIライブラリ | MUI（Material UI）+ Emotion |
 | アイコン | `@mui/icons-material` |
 | データ管理 | `src/data/tweetList.json`（ビルド時にバンドル） |
+| ユニットテスト | Vitest（`scripts/` が対象） |
 | E2Eテスト | Playwright |
 | ホスティング | Netlify（GitHub連携による自動デプロイ） |
 
@@ -196,6 +197,56 @@ Playwrightによるe2eテストを `e2e/` に置く（`npm run test:e2e`）。
 - `desktop.spec.ts` / `mobile.spec.ts` の2プロジェクト構成（ビューポート幅 1280px / 390px）
 - テスト実行時は `vite --mode e2e` で開発サーバーを起動し、データを `e2e/fixtures/tweetList.json` に差し替える
 - CSSクラスやDOM構造ではなく、ユーザーから見える挙動（見出し・ボタン・テキストの表示）をアサートする
+
+---
+
+## ユニットテスト
+
+Vitestによるユニットテストを `scripts/` に置く（`npm test`）。対象は `scripts/**/*.test.ts` のみで、Playwrightのspec（`e2e/`）とは分離している（`vite.config.ts` の `test.include`）。
+
+---
+
+## ツイート追加フロー
+
+審査員コメントのツイートは、GitHub Issue（Issue Forms）を起点に `tweetList.json` を更新するPull Requestを自動作成するフローで追加する。手動でのファイル編集は対象外（将来的な拡張候補ではなく、通常の運用手段）。
+
+### Issueフォーム（`.github/ISSUE_TEMPLATE/add-tweets.yml`、`add-tweets`ラベル）
+
+| 項目 | 形式 | 必須 | 内容 |
+| --- | --- | --- | --- |
+| 操作 | ドロップダウン | ○ | `既存の大会に追加` / `新しい大会を作成して追加` |
+| 大会名 | 1行テキスト | 条件付き | 例: `UNIDOL 2026 Summer`。既存の大会では空欄なら最新大会、新しい大会では必須 |
+| 日程 | ドロップダウン | ○ | `決勝戦` / `敗者復活戦` / `関東` / `東海` / `関西` / `九州` / `北海道` |
+| 日目 | ドロップダウン | ○ | `なし` / `1`〜`9`（既定は `なし`） |
+| ツイート | 複数行テキスト | ○ | ツイートURLまたはID。改行・空白区切りで複数可 |
+
+### 解決ルール
+
+- **大会名**: `UNIDOL {年} {Summer|Fresh|Winter}` のみ受け付ける（Winterの年は `2026-27` のように開始年の次年2桁、Summer/Freshは `2026` の4桁）。この名前から大会ID（例: `UNIDOL 2026-27 Winter` → `unidol-2026-winter`）を生成して既存データと照合する。`既存の大会に追加` で見つからない場合はエラー（新規作成しない）、`新しい大会を作成して追加` で既に存在する場合もエラー
+- **日程**: 決勝戦・敗者復活戦に日目を指定するとエラー。地域はラベルより種別（関東`kanto`/東海`tokai`/関西`kansai`/九州`kyushu`/北海道`hokkaido`、日目を付けた1桁の数字をID末尾に追加）で照合するため、既存ラベルの表記揺れ（`関東3日目`/`関東予選3日目`など）に影響されない。ラベルはFresh以外が`{地域}予選{N}日目`、Freshが`{地域}{N}日目`（日目が`なし`なら`{N}日目`を付けない）。新規作成時は大会の`events`先頭に追加し、既存の日程のラベルは変更しない
+- **ツイート**: `x.com` / `twitter.com`（`www.` / `mobile.` 付き・クエリ文字列は無視）のURLと数字のみのIDを受け付ける。URLの投稿者が `TWEET_AUTHOR_HANDLE` と異なる場合はエラー（大文字小文字は区別しない）。同じ日程への重複はスキップ、別の日程への重複はエラー。追加後は`tweets`をID昇順（`BigInt`比較）に保つ
+
+### CI・PR作成
+
+1. Issueの起票・編集（`add-tweets`ラベル・open・起票者がリポジトリオーナー）で `add-tweets.yml` が起動する
+2. `apply` job: `ud-judge-comment-archive/scripts/add-tweets/main.ts`（Node 24の型除去で実行、`npm ci`不要）がIssue本文を解析し、`tweetList.json` を書き換えて `add-tweets/issue-{Issue番号}` ブランチへforce push する
+3. `ci` job: `GITHUB_TOKEN` で作成したブランチでは `pull_request` の起動条件を満たさないため、PR作成前に `ci.yml` を `workflow_call` で呼び出して検証する（結果はPRのチェック欄ではなくIssueコメントで確認する）
+4. `report` job: CI成功ならPRを作成・更新（本文に`Closes #{Issue番号}`を含む）してIssueにリンクをコメント、失敗なら実行ログのリンクをコメントしてPRは作らない
+5. 入力エラー・全件登録済みの場合はコミットせず、原因をコメントする（全件登録済みはIssueを閉じる）
+6. Issue本文の編集で、最新の`main`からブランチを作り直して再実行する（既存のPRがあれば同じブランチへのpushで更新される）
+
+### モジュール構成（`ud-judge-comment-archive/scripts/add-tweets/`）
+
+| ファイル | 責務 |
+| --- | --- |
+| `parseIssueBody.ts` | Issue Formsの本文（`### 見出し`形式、`_No response_`は空扱い）を入力値に変換する |
+| `parseTweetIds.ts` | URL・IDの解析と投稿者の検証 |
+| `resolveTarget.ts` | 大会名・日程の検証、ID・ラベルの生成。地域の対応表もここに置く |
+| `applyTweets.ts` | データへの反映を行う純粋関数。入力を破壊せず、全件検証してから結果を返す |
+| `validateTweetList.ts` | データ全体の規則の検証。書き込み前のチェックと、実データに対するユニットテストで使う |
+| `main.ts` | 環境変数の読み取り、ファイル入出力、GitHub Actionsへの結果出力 |
+
+地域を増やす場合は、`add-tweets.yml`フォームの選択肢と `resolveTarget.ts` の対応表の2か所を変更する。
 
 ---
 

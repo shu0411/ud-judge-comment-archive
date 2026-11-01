@@ -8,7 +8,10 @@ Viteアプリ本体はルート直下ではなく `ud-judge-comment-archive/` �
 
 ```txt
 /
-├ .github/workflows/      # Issue駆動フロー・Dependabot PRレビュー（詳細は shu0411/.github）の呼び出し側workflow
+├ .github/
+│  ├ ISSUE_TEMPLATE/      # requirement.md（要件）・add-tweets.yml（ツイート追加フォーム）
+│  └ workflows/           # add-tweets.yml・ci.yml、Issue駆動フロー・Dependabot PRレビュー
+│                         # （詳細は shu0411/.github）の呼び出し側workflow
 ├ docs/spec.md            # 仕様書（挙動を変えたら更新する）
 ├ netlify.toml            # デプロイ設定（base/publishはネスト構成前提）
 └ ud-judge-comment-archive/   # Vite + React + TypeScript アプリ本体
@@ -19,6 +22,7 @@ Viteアプリ本体はルート直下ではなく `ud-judge-comment-archive/` �
    │  ├ constants.ts      # 投稿者ハンドルと tweetUrl()
    │  ├ theme.ts          # MUIテーマ、HEADER_HEIGHT / DRAWER_WIDTH
    │  └ types.ts          # Tournament / Event 型
+   ├ scripts/add-tweets/  # 「ツイート追加」Issueを解析しtweetList.jsonを更新するスクリプト
    └ e2e/                 # Playwrightテストとfixtureデータ
 ```
 
@@ -29,7 +33,18 @@ Viteアプリ本体はルート直下ではなく `ud-judge-comment-archive/` �
 | `npm run dev` | 開発サーバー起動 |
 | `npm run build` | 型チェック（`tsc -b`）+ プロダクションビルド |
 | `npm run lint` | ESLint |
+| `npm test` | Vitest ユニットテスト（`scripts/` が対象。Playwrightのspecは対象外） |
 | `npm run test:e2e` | Playwright e2eテスト（開発サーバーは自動起動） |
+
+## ツイート追加フロー（`scripts/add-tweets/`）
+
+「ツイート追加」Issue（`.github/ISSUE_TEMPLATE/add-tweets.yml`）の起票・編集を起点に、
+`.github/workflows/add-tweets.yml` が `tweetList.json` を更新するPull Requestを作成する。
+処理の詳細（モジュール構成・CIの起動方法・エラー時の挙動など）は [docs/spec.md](docs/spec.md) を参照。
+
+- 各モジュールは純粋関数として実装し、Vitestでユニットテストする（TDD）
+- `main.ts` のみが環境変数の読み取り・ファイルI/O・GitHub Actionsへの出力を担う
+- ID の比較には `BigInt` を使う（19桁のツイートIDは `Number` の安全な範囲を超える）
 
 ## 技術スタックと方針
 

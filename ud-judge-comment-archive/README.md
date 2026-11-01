@@ -24,11 +24,14 @@ npm run dev
 | `npm run build` | 型チェック（`tsc -b`）とプロダクションビルド |
 | `npm run lint` | ESLint |
 | `npm run preview` | ビルド成果物をローカルでプレビュー |
+| `npm test` | Vitestによるユニットテスト（`scripts/` が対象） |
 | `npm run test:e2e` | Playwrightによるe2eテスト |
 
 ## データの管理
 
 大会・日程・ツイートの情報は [`src/data/tweetList.json`](src/data/tweetList.json) に定義します（型定義は [`src/types.ts`](src/types.ts)）。ツイートは投稿者アカウントが単一である前提で、ツイートIDの配列のみを保持し、URLは [`src/constants.ts`](src/constants.ts) の `tweetUrl()` で組み立てます。投稿者アカウントを変更する場合は `TWEET_AUTHOR_HANDLE` を書き換えてください。
+
+通常は手で編集せず、「ツイート追加」Issue（[`.github/ISSUE_TEMPLATE/add-tweets.yml`](../.github/ISSUE_TEMPLATE/add-tweets.yml)）を起票して `tweetList.json` を更新するPull Requestを自動作成します。処理内容は [`scripts/add-tweets/`](scripts/add-tweets/) に実装されています（詳細は [docs/spec.md](../docs/spec.md) の「ツイート追加フロー」を参照）。
 
 ## e2eテスト
 
