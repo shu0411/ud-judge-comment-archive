@@ -1,0 +1,58 @@
+name: CI
+
+# lint / typecheck+build / unit test / e2e test を実行する。
+# 通常のPull Requestでは pull_request トリガーで実行する。
+# add-tweets.yml からは、GITHUB_TOKENで作成したブランチでは pull_request が起動しないため、
+# PR作成前の検証として workflow_call で呼び出す（ref に検証対象のブランチを渡す）。
+
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      ref:
+        description: 検証対象のref
+        required: false
+        type: string
+
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: ud-judge-comment-archive/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ud-judge-comment-archive
+        run: npm ci
+
+      - name: Lint
+        working-directory: ud-judge-comment-archive
+        run: npm run lint
+
+      - name: Typecheck + Build
+        working-directory: ud-judge-comment-archive
+        run: npm run build
+
+      - name: Unit test
+        working-directory: ud-judge-comment-archive
+        run: npm test
+
+      - name: Install Playwright browser
+        working-directory: ud-judge-comment-archive
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E test
+        working-directory: ud-judge-comment-archive
+        run: npm run test:e2e

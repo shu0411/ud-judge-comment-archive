@@ -1,0 +1,147 @@
+name: Add Tweets
+
+# ツイート追加Issue（add-tweetsラベル）が起票・編集されたら、
+# tweetList.jsonを更新するPull Requestを作成する。
+# 1. apply: Issue本文を解析し、ファイルを書き換えてブランチにpushする
+# 2. ci: workflow_call でci.ymlを呼び出し、pushしたブランチを検証する
+#    （GITHUB_TOKENで作成したブランチではpull_requestが起動しないため）
+# 3. report: CIの結果に応じてPull Requestの作成・更新とIssueへのコメントを行う
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: add-tweets-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  apply:
+    if: |
+      contains(github.event.issue.labels.*.name, 'add-tweets') &&
+      github.event.issue.state == 'open' &&
+      github.event.sender.login == github.repository_owner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    outputs:
+      status: ${{ steps.apply.outputs.status }}
+      summary: ${{ steps.apply.outputs.summary }}
+      commit-message: ${{ steps.apply.outputs.commit-message }}
+    env:
+      BRANCH: add-tweets/issue-${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Apply tweets
+        id: apply
+        working-directory: ud-judge-comment-archive
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: node scripts/add-tweets/main.ts
+
+      - name: Commit and push
+        if: steps.apply.outputs.status == 'added'
+        working-directory: ud-judge-comment-archive
+        env:
+          COMMIT_MESSAGE: ${{ steps.apply.outputs.commit-message }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B "$BRANCH"
+          git add src/data/tweetList.json
+          git commit -m "$COMMIT_MESSAGE"
+          git push --force origin "$BRANCH"
+
+      - name: Unexpected failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "想定外のエラーが発生しました。実行ログを確認してください: $RUN_URL"
+
+  ci:
+    needs: apply
+    if: needs.apply.outputs.status == 'added'
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: add-tweets/issue-${{ github.event.issue.number }}
+
+  report:
+    needs: [apply, ci]
+    if: always() && needs.apply.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      BRANCH: add-tweets/issue-${{ github.event.issue.number }}
+    steps:
+      - name: Comment and close (no change)
+        if: needs.apply.outputs.status == 'no-change'
+        env:
+          SUMMARY: ${{ needs.apply.outputs.summary }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "$SUMMARY"
+          gh issue close "$ISSUE_NUMBER"
+
+      - name: Comment error
+        if: needs.apply.outputs.status == 'error'
+        env:
+          SUMMARY: ${{ needs.apply.outputs.summary }}
+        run: gh issue comment "$ISSUE_NUMBER" --body "$SUMMARY"
+
+      - name: Comment CI failure
+        if: needs.apply.outputs.status == 'added' && needs.ci.result == 'failure'
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "CIが失敗しました。実行ログを確認してください: $RUN_URL"
+
+      - name: Create or update pull request
+        if: needs.apply.outputs.status == 'added' && needs.ci.result == 'success'
+        env:
+          TITLE: ${{ needs.apply.outputs.commit-message }}
+          SUMMARY: ${{ needs.apply.outputs.summary }}
+        run: |
+          # gh pr view は閉じたPRも返すため、開いているPRだけを探す
+          PR_URL=$(gh pr list --head "$BRANCH" --state open --json url -q '.[0].url // empty')
+          if [ -n "$PR_URL" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body "Issue本文の更新によりPull Requestを更新しました: $PR_URL"
+          else
+            BODY_FILE=$(mktemp)
+            {
+              echo "$SUMMARY"
+              echo
+              echo "Closes #$ISSUE_NUMBER"
+            } > "$BODY_FILE"
+            PR_URL=$(gh pr create --base main --head "$BRANCH" --title "$TITLE" --body-file "$BODY_FILE")
+            gh issue comment "$ISSUE_NUMBER" --body "Pull Requestを作成しました: $PR_URL"
+          fi
+
+      - name: Unexpected failure
+        if: failure()
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "想定外のエラーが発生しました。実行ログを確認してください: $RUN_URL"

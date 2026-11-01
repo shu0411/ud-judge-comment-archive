@@ -1,0 +1,67 @@
+name: ツイート追加
+description: 審査員コメントのツイートを tweetList.json に追加します
+title: "ツイート追加: "
+labels: ["add-tweets"]
+body:
+  - type: dropdown
+    id: operation
+    attributes:
+      label: 操作
+      options:
+        - 既存の大会に追加
+        - 新しい大会を作成して追加
+    validations:
+      required: true
+
+  - type: input
+    id: tournament-name
+    attributes:
+      label: 大会名
+      description: >-
+        例: `UNIDOL 2026 Summer` / `UNIDOL 2025 Fresh` / `UNIDOL 2026-27 Winter`。
+        「既存の大会に追加」で空欄にすると最新大会になります。「新しい大会を作成して追加」では必須です。
+      placeholder: UNIDOL 2026 Summer
+
+  - type: dropdown
+    id: event
+    attributes:
+      label: 日程
+      options:
+        - 決勝戦
+        - 敗者復活戦
+        - 関東
+        - 東海
+        - 関西
+        - 九州
+        - 北海道
+    validations:
+      required: true
+
+  - type: dropdown
+    id: day
+    attributes:
+      label: 日目
+      description: 決勝戦・敗者復活戦を選んだ場合は「なし」のままにしてください。
+      options:
+        - なし
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+        - "7"
+        - "8"
+        - "9"
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: tweets
+    attributes:
+      label: ツイート
+      description: ツイートのURLまたはID。改行または空白区切りで複数指定できます。
+      placeholder: https://x.com/example/status/1234567890123456789
+    validations:
+      required: true
