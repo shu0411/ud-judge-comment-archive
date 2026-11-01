@@ -196,6 +196,7 @@ Playwrightによるe2eテストを `e2e/` に置く（`npm run test:e2e`）。
 
 - `desktop.spec.ts` / `mobile.spec.ts` の2プロジェクト構成（ビューポート幅 1280px / 390px）
 - テスト実行時は `vite --mode e2e` で開発サーバーを起動し、データを `e2e/fixtures/tweetList.json` に差し替える
+- `widgets.js` は `e2e/test.ts` のfixtureで空のスクリプトに差し替える（読み込みの遅延と、埋め込みの描画によるレイアウトのずれでテストが不安定になるため）
 - CSSクラスやDOM構造ではなく、ユーザーから見える挙動（見出し・ボタン・テキストの表示）をアサートする
 
 ---
