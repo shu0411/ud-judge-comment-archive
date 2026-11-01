@@ -4,6 +4,14 @@
     "label": "UNIDOL 2026 Fresh",
     "events": [
       {
+        "id": "unidol-2026-fresh-kanto3",
+        "label": "関東3日目",
+        "tweets": [
+          "2110692244093317593",
+          "2110692248023097593"
+        ]
+      },
+      {
         "id": "unidol-2026-fresh-kanto2",
         "label": "関東2日目",
         "tweets": [
