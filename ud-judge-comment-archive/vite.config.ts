@@ -13,4 +13,8 @@ export default defineConfig(({ mode }) => ({
       ),
     },
   },
+  test: {
+    include: ['scripts/**/*.test.ts'],
+    environment: 'node',
+  },
 }))
